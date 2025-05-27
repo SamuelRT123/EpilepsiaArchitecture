@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Crear Usuario</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+
+  <header>
+    <h1>Crear nuevo usuario</h1>
+  </header>
+
+  <main>
+    <form method="post">
+      {% csrf_token %}
+      
+      <label for="nombre">Nombre:</label>
+      <input type="text" id="nombre" name="nombre" required>
+
+      <label for="activo">
+        <input type="checkbox" id="activo" name="activo">
+        Activo
+      </label>
+
+      <label for="fecha_ingreso">Fecha de ingreso (texto):</label>
+      <input type="text" id="fecha_ingreso" name="fecha_ingreso" required>
+
+      <label for="fecha_estimada_salida">Fecha estimada de salida (texto):</label>
+      <input type="text" id="fecha_estimada_salida" name="fecha_estimada_salida" required>
+
+      <label for="examenes_ids">Lista de exámenes (IDs separados por coma):</label>
+      <input type="text" id="examenes_ids" name="examenes_ids" placeholder="Ejemplo: 1,2,3">
+
+      <button type="submit">Guardar usuario</button>
+    </form>
+  </main>
+
+</body>
+</html>

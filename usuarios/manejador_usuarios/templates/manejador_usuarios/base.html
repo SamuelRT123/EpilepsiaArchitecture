@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}DetecciónEpilepsia{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+
+ <header>
+    <nav style="display: flex; justify-content: flex-start; align-items: center; gap: 2rem;">
+      <!-- IZQUIERDA: Título y navegación -->
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <div style="font-weight: bold;">
+          G3 - TheBitArchitects
+        </div>
+
+        <a href="http://localhost:8000/usuarios">Usuarios</a>
+        <a href="http://localhost:8000/examenes">Exámenes</a>
+        <a href="http://localhost:8000/prediccion">Predicción</a>
+</div>
+        <!-- Botón login/logout (comentar si aún no se usa) -->
+        {% comment %} {# 
+        {% if request.user.is_authenticated %}
+          <strong>{{ request.user.username }}</strong>
+          <a href="{% url 'logout' %}">Cerrar sesión</a>
+        {% else %}
+          <a href="{% url 'login' %}">Iniciar sesión</a>
+        {% endif %}
+        #} {% endcomment %}
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    
+    {% block content %}
+
+    <div style="display: flex; justify-content: center; margin-top: 2rem;">
+      <form action="{% url 'ver_todos_usuarios' %}" method="get">
+        <button type="submit">Ver todos los usuarios</button>
+      </form>
+    </div>
+    <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
+      <a href="{% url 'crear_usuario' %}">
+        <button>Crear nuevo usuario</button>
+      </a>
+    </div>
+
+
+    {% endblock %}
+
+
+
+
+  </main>
+
+</body>
+</html>

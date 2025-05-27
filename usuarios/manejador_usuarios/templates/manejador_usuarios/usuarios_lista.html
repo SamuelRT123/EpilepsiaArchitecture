@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Usuarios</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+
+  <header>
+    <h1>Usuarios Registrados</h1>
+  </header>
+
+  <main>
+    {% if usuarios %}
+      <table>
+        <thead>
+            <tr>    
+            <th>Nombre</th>
+            <th>Activo</th>
+            <th>Fecha de ingreso</th>
+            <th>Fecha estimada de salida</th>
+            <th>Exámenes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+                <td>{{ usuario.nombre }}</td>
+                <td>{{ usuario.activo }}</td>
+                <td>{{ usuario.fecha_ingreso }}</td>
+                <td>{{ usuario.fecha_estimada_salida }}</td>
+                <td>
+                {% if usuario.examenes_ids %}
+                    <a href="http://<IP-KONG>:8001/examenes" target="_blank">
+                    {{ usuario.examenes_ids }}
+                    </a>
+                {% else %}
+                    Sin exámenes
+                {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+
+
+
+    {% else %}
+      <p>No hay usuarios registrados.</p>
+    {% endif %}
+  </main>
+
+</body>
+</html>
