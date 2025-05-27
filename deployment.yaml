@@ -1,0 +1,266 @@
+# ***************** Universidad de los Andes ***********************
+# ****** Departamento de Ingeniería de Sistemas y Computación ******
+# ********** Arquitectura y diseño de Software - ISIS2503 **********
+# ********** Grupo 3 - TheBitArchitects **********
+
+resources:
+# Firewall rules
+- name: msd-api-gateway
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - msd-api-gateway
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8000
+- name: msd-services-apps
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags: 
+    - msd-api-gateway
+    targetTags:
+    - msd-services-firewall
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8080
+- name: msd-services-apps-web
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceRanges: 
+    - 0.0.0.0/0
+    targetTags:
+    - msd-services-firewall
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 8080
+- name: msd-service-db
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags: 
+    - msd-services-firewall
+    targetTags:
+    - msd-service-db
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 5432
+
+# Router y NAT
+- name: msd-router
+  type: compute.v1.router
+  properties:
+    region: us-central1
+    network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+    nats:
+    - name: msd-nat
+      natIpAllocateOption: AUTO_ONLY
+      sourceSubnetworkIpRangesToNat: ALL_SUBNETWORKS_ALL_IP_RANGES
+
+# Kong instance
+- name: msd-kong-instance
+  type: compute.v1.instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-463-8
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+      networkIP: 10.128.0.81
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - msd-api-gateway
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo mkdir /home/labs
+          cd /home/labs
+          sudo git clone https://github.com/SamuelRT123/EpilepsiaArchitecture.git
+          cd EpilepsiaArchitecture
+          docker network create kong-net
+          docker run -d --name kong --network=kong-net --restart=always \
+          -v "$(pwd):/kong/declarative/" -e "KONG_DATABASE=off" \
+          -e "KONG_DECLARATIVE_CONFIG=/kong/declarative/kong.yaml" \
+          -p 8000:8000 kong/kong-gateway
+
+# Database instances
+- name: msd-usuarios-db
+  type: compute.v1.instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-463-8
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+      networkIP: 10.128.0.82
+    tags:
+      items: 
+      - msd-service-db
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          docker run --restart=always -d -e POSTGRES_USER=usuarios_user -e POSTGRES_DB=usuarios_db -e POSTGRES_PASSWORD=isis2503 -p 5432:5432 --name usuarios-db postgres
+
+- name: msd-predicciones-db
+  type: compute.v1.instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-463-8
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+      networkIP: 10.128.0.83
+    tags:
+      items: 
+      - msd-service-db
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          docker run --restart=always -d -e POSTGRES_USER=predicciones_user -e POSTGRES_DB=predicciones_db -e POSTGRES_PASSWORD=isis2503 -p 5432:5432 --name predicciones-db postgres
+
+
+# Service instances
+- name: msd-usuarios-ms
+  type: compute.v1.instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-463-8
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+      networkIP: 10.128.0.84
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - msd-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo mkdir /home/labs
+          cd /home/labs
+          sudo git clone https://github.com/SamuelRT123/EpilepsiaArchitecture.git
+          cd EpilepsiaArchitecture/usuarios
+
+- name: msd-predicciones-ms
+  type: compute.v1.instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+      networkIP: 10.128.0.85
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - msd-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt install python3-pip -y
+          sudo mkdir /home/labs
+          cd /home/labs
+          sudo git clone https://github.com/SamuelRT123/EpilepsiaArchitecture.git
+          cd EpilepsiaArchitecture/predicciones
+          sudo pip3 install -r requirements.txt
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+
+- name: msd-examenes-ms
+  type: compute.v1.instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+      networkIP: 10.128.0.85
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - msd-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt install python3-pip -y
+          sudo mkdir /home/labs
+          cd /home/labs
+          sudo git clone https://github.com/SamuelRT123/EpilepsiaArchitecture.git
+          cd EpilepsiaArchitecture/examenes
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate

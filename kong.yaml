@@ -1,0 +1,46 @@
+_format_version: "2.1"
+
+services:
+  # - name: usuarios_service
+  #   host: usuarios_upstream
+  #   protocol: http
+  #   routes:
+  #     - name: usuarios
+  #       paths:
+  #         - /usuarios
+  #       strip_path: false
+
+  - name: examenes_service
+    host: examenes_upstream
+    protocol: http
+    routes:
+      - name: examenes
+        paths:
+          - /examenes
+        strip_path: false
+  
+  - name: predicciones_service
+    host: predicciones_upstream
+    protocol: http
+    routes:
+      - name: predicciones
+        paths:
+          - /predicciones
+        strip_path: false
+    
+upstreams:
+
+  # - name: usuarios_upstream
+  #   targets:
+  #     - target: <IP_Balanceador>:8080
+  #       weight: 100
+
+  - name: examenes_upstream
+    targets:
+      - target: 10.128.0.85:8080
+        weight: 100
+      
+  - name: predicciones_upstream
+    targets:
+      - target: 10.128.0.86:8080
+        weight: 100
