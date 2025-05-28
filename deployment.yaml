@@ -223,6 +223,9 @@ resources:
           cd /home/labs
           sudo git clone https://github.com/SamuelRT123/EpilepsiaArchitecture.git
           cd EpilepsiaArchitecture/usuarios
+          sudo pip3 install -r requirements.txt
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
 
 - name: msd-predicciones-ms
   type: compute.v1.instance
@@ -292,5 +295,6 @@ resources:
           cd /home/labs
           sudo git clone https://github.com/SamuelRT123/EpilepsiaArchitecture.git
           cd EpilepsiaArchitecture/examenes
+          sudo pip3 install -r requirements.txt
           sudo python3 manage.py makemigrations
           sudo python3 manage.py migrate
