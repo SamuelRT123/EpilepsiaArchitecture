@@ -47,7 +47,7 @@ resources:
     - IPProtocol: TCP
       ports: 
       - 8080
-      
+
 - name: msd-service-db
   type: compute.v1.firewall
   properties:
@@ -235,6 +235,8 @@ resources:
       - key: startup-script
         value: |
           #!/bin/bash
+          sudo apt-get update
+          sudo apt install python3-pip -y
           sudo mkdir /home/labs
           cd /home/labs
           sudo git clone https://github.com/SamuelRT123/EpilepsiaArchitecture.git
