@@ -24,5 +24,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('subir_examen/', views.subir_examen_eeg, name='subir_examen'),
     path('ver_examenes/', views.ver_examenes_eeg, name='ver_examenes'),
-    path('', include('manejador_examenes.urls')),
 ]
