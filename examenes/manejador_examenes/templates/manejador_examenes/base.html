@@ -25,12 +25,12 @@
 
     <div style="display: flex; flex-direction: column; align-items: center; gap: 2rem; margin-top: 3rem;">
 
-      <!-- Botón para ver todos los exámenes -->
-      <form action="{% url 'ver_examenes' %}" method="get">
-        <button type="submit">📚 Ver todos los exámenes</button>
-      </form>
+      <!-- Botón para subir archivo JSON -->
+      <a href="{% url 'subir_examen' %}">
+        <button style="padding: 1rem 2rem;">⬆️ Subir examen EEG (.json)</button>
+      </a>
 
-      <!-- Después -->
+      <!-- Botón para ver todos los exámenes -->
       <a href="{% url 'ver_examenes' %}">
         <button style="padding: 1rem 2rem;">📑 Ver Exámenes EEG</button>
       </a>
