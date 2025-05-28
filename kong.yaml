@@ -37,10 +37,10 @@ upstreams:
 
   - name: examenes_upstream
     targets:
-      - target: 10.128.0.85:8080
+      - target: 10.128.0.86:8080
         weight: 100
       
   - name: predicciones_upstream
     targets:
-      - target: 10.128.0.86:8080
+      - target: 10.128.0.85:8080
         weight: 100

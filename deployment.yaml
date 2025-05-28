@@ -47,6 +47,7 @@ resources:
     - IPProtocol: TCP
       ports: 
       - 8080
+      
 - name: msd-service-db
   type: compute.v1.firewall
   properties:
@@ -61,6 +62,21 @@ resources:
     - IPProtocol: TCP
       ports: 
       - 5432
+
+- name: nosqld-firewall-mongo
+  type: compute.v1.firewall
+  properties:
+    network: https://www.googleapis.com/compute/v1/projects/<id-proyecto>/global/networks/default
+    priority: 1000
+    direction: INGRESS
+    sourceTags: 
+    - nosqld-django
+    targetTags:
+    - nosqld-mongo
+    allowed:
+    - IPProtocol: TCP
+      ports: 
+      - 27017
 
 # Router y NAT
 - name: msd-router
