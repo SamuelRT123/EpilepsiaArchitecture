@@ -23,6 +23,10 @@
           <td>{{ examen.examen.duracion_segundos }}</td>
           <td>{{ examen.examen.frecuencia_muestreo }}</td>
         </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5" style="text-align:center;">No hay exámenes registrados.</td>
+        </tr>
       {% endfor %}
     </tbody>
   </table>

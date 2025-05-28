@@ -21,7 +21,7 @@ from manejador_examenes import views
 urlpatterns = [
     url(r'^examenes/', views.saludo),
     path('admin/', admin.site.urls),
-    path('subir/', views.subir_examen_eeg, name='subir_examen'),
-    path('ver/', views.ver_examenes_eeg, name='ver_examenes'),
+    path('subir_examen/', views.subir_examen_eeg, name='subir_examen'),
+    path('ver_examenes/', views.ver_examenes_eeg, name='ver_examenes'),
     path('', include('manejador_examenes.urls')),
 ]
