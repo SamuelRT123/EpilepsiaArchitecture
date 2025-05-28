@@ -161,6 +161,36 @@ resources:
           #!/bin/bash
           docker run --restart=always -d -e POSTGRES_USER=predicciones_user -e POSTGRES_DB=predicciones_db -e POSTGRES_PASSWORD=isis2503 -p 5432:5432 --name predicciones-db postgres
 
+# Mongo Database instance
+- type: compute.v1.instance
+  name: nosqld-mongo-examenes-db
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-101-17162-386-64
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+      networkIP: 10.128.0.70
+    tags:
+      items: 
+      - nosqld-mongo
+    metadata:
+      items:
+        - key: startup-script
+          value: |
+            docker run -d \
+              --name mongo \
+              -p 27017:27017 \
+              -e MONGO_INITDB_ROOT_USERNAME=sprint4 \
+              -e MONGO_INITDB_ROOT_PASSWORD=securepassword123 \
+              -v /mnt/disks/mongodb-data:/data/db \
+              mongo:latest
 
 # Service instances
 - name: msd-usuarios-ms
@@ -244,7 +274,7 @@ resources:
         sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
-      networkIP: 10.128.0.85
+      networkIP: 10.128.0.86
       accessConfigs:
       - name: External NAT
         type: ONE_TO_ONE_NAT

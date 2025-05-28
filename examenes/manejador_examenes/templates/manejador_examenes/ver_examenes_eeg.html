@@ -1,0 +1,29 @@
+{% extends 'manejador_examenes/base.html' %}
+
+{% block title %}Lista de Exámenes{% endblock %}
+
+{% block content %}
+  <h2>📄 Exámenes EEG Registrados</h2>
+  <table border="1" cellspacing="0" cellpadding="8">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Paciente</th>
+        <th>Fecha</th>
+        <th>Duración (s)</th>
+        <th>Frecuencia (Hz)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for examen in examenes %}
+        <tr>
+          <td>{{ examen._id }}</td>
+          <td>{{ examen.paciente.nombre }}</td>
+          <td>{{ examen.examen.fecha }}</td>
+          <td>{{ examen.examen.duracion_segundos }}</td>
+          <td>{{ examen.examen.frecuencia_muestreo }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

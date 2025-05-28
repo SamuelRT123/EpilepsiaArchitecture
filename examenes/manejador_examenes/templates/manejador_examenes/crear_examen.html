@@ -1,0 +1,6 @@
+<form method="post" enctype="multipart/form-data" action="{% url 'crear_prediccion' %}">
+    {% csrf_token %}
+    <label for="archivo_json">Subir JSON:</label>
+    <input type="file" name="archivo_json" accept=".json" required>
+    <button type="submit">Enviar</button>
+</form>

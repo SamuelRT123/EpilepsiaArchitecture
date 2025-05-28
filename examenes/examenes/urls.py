@@ -16,6 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from manejador_examenes import views
+
 urlpatterns = [
+    path('', views.saludo, name='saludo'),
     path('admin/', admin.site.urls),
+    path('subir-examen/', views.subir_examen_eeg, name='subir_examen_eeg'),
+    path('ver-examenes/', views.ver_examenes_eeg, name='ver_examenes'),
 ]

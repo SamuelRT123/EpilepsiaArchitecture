@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subir Examen EEG</title>
+</head>
+<body>
+    <h1>Subir Examen EEG (.json)</h1>
+    <form action="{% url 'subir_examen_eeg' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="archivo_json" accept=".json" required><br><br>
+        <input type="submit" value="Subir">
+    </form>
+</body>
+</html>

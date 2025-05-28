@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Exámenes EEG</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+</head>
+<body>
+
+  <header>
+    <nav style="display: flex; justify-content: flex-start; align-items: center; gap: 2rem;">
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <div style="font-weight: bold;">
+          G3 - TheBitArchitects
+        </div>
+        <a href="http://localhost:8000/usuarios">Usuarios</a>
+        <a href="http://localhost:8000/examenes">Exámenes</a>
+        <a href="http://localhost:8000/prediccion">Predicción</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <h1 style="text-align: center;">🧪 Gestión de Exámenes EEG</h1>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 2rem; margin-top: 3rem;">
+
+      <!-- Botón para ver todos los exámenes -->
+      <form action="{% url 'ver_examenes' %}" method="get">
+        <button type="submit">📚 Ver todos los exámenes</button>
+      </form>
+
+      <!-- Después -->
+      <a href="{% url 'ver_examenes' %}">
+        <button style="padding: 1rem 2rem;">📑 Ver Exámenes EEG</button>
+      </a>
+
+    </div>
+  </main>
+
+</body>
+</html>
