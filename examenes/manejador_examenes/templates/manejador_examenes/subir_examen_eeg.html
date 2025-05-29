@@ -1,12 +1,21 @@
-{% extends 'manejador_examenes/base.html' %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Subir Examen EEG</title>
+</head>
+<body>
 
-{% block title %}Subir Examen EEG{% endblock %}
-
-{% block content %}
-  <h2>⬆️ Subir Examen EEG (.json)</h2>
-  <form action="{% url 'subir_examen' %}" method="post" enctype="multipart/form-data">
+  <h1>Subir Examen EEG (.json)</h1>
+{% comment %} 
+  <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
-    <input type="file" name="archivo_json" accept=".json" required><br><br>
-    <input type="submit" value="Subir">
-  </form>
-{% endblock %}
+    <input type="file" name="archivo_json" accept=".json" required />
+    <button type="submit">Subir</button>
+  </form> {% endcomment %}
+
+  <br>
+  <a href="{% url 'home' %}">⬅️ Volver al inicio</a>
+
+</body>
+</html>

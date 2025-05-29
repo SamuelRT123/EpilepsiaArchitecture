@@ -4,30 +4,58 @@
 
 {% block content %}
   <h2>📄 Exámenes EEG Registrados</h2>
-  <table border="1" cellspacing="0" cellpadding="8">
-    <thead>
+  
+  {% if error_message %}
+    <div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+      <strong>⚠️ Error:</strong> {{ error_message }}
+    </div>
+  {% endif %}
+
+  <table border="1" cellspacing="0" cellpadding="8" style="width: 100%; border-collapse: collapse;">
+    <thead style="background-color: #f8f9fa;">
       <tr>
         <th>ID</th>
         <th>Paciente</th>
         <th>Fecha</th>
         <th>Duración (s)</th>
         <th>Frecuencia (Hz)</th>
+        <th>Electrodos</th>
       </tr>
     </thead>
     <tbody>
       {% for examen in examenes %}
         <tr>
-          <td>{{ examen._id }}</td>
+          <td>{{ examen.id|slice:":8" }}...</td>
           <td>{{ examen.paciente.nombre }}</td>
-          <td>{{ examen.examen.fecha }}</td>
+          <td>{{ examen.examen.fecha|slice:":10" }}</td>
           <td>{{ examen.examen.duracion_segundos }}</td>
           <td>{{ examen.examen.frecuencia_muestreo }}</td>
+          <td>{{ examen.examen.electrodos|length }} electrodos</td>
         </tr>
       {% empty %}
         <tr>
-          <td colspan="5" style="text-align:center;">No hay exámenes registrados.</td>
+          <td colspan="6" style="text-align:center; padding: 2rem; color: #6c757d;">
+            {% if not error_message %}
+              📭 No hay exámenes registrados.
+            {% else %}
+              No se pueden mostrar los exámenes debido al error anterior.
+            {% endif %}
+          </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
+
+  {% if examenes %}
+    <div style="margin-top: 1rem; text-align: center; color: #6c757d;">
+      Total: {{ examenes|length }} examen{{ examenes|length|pluralize:"es" }}
+    </div>
+  {% endif %}
+
+  <div style="margin-top: 2rem; text-align: center;">
+    <a href="{% url 'examenes_home' %}">
+      <button style="padding: 0.75rem 1.5rem;">← Volver al inicio</button>
+    </a>
+  </div>
+
 {% endblock %}

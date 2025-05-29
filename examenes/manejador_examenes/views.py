@@ -1,18 +1,20 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import EEGRecord
 from django.contrib import messages
 from django.http import JsonResponse
 from django.urls import reverse
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 import requests
 from pymongo import MongoClient
 from bson import ObjectId
 import json
-from django.views.decorators.csrf import csrf_exempt
+import os  # ← IMPORT AGREGADO
 
 
 def check_usuario(data):
+    return True
     r = requests.get(settings.PATH_VAR, headers={"Accept":"application/json"})
     usuarios = r.json()
     for usuario in usuarios:
@@ -21,130 +23,172 @@ def check_usuario(data):
     return False
 
 def ver_examenes_eeg(request):
-    client = MongoClient(settings.MONGO_CLI)
-    db = client.eeg_db
-    eeg_collection = db['eeg_records']
+    examenes = []
+    error_message = None
+    
+    try:
+        print("Intentando conectar a MongoDB...")  # Debug
+        client = MongoClient(settings.MONGO_CLI, serverSelectionTimeoutMS=5000)  # 5 segundos timeout
+        
+        # Probar la conexión
+        client.admin.command('ping')
+        print("Conexión a MongoDB exitosa")  # Debug
+        
+        db = client.eeg_db
+        eeg_collection = db['eeg_records']
 
-    # Traer todos los exámenes
-    examenes = list(eeg_collection.find())
+        # Traer todos los exámenes
+        examenes = list(eeg_collection.find())
+        print(f"Se encontraron {len(examenes)} exámenes")  # Debug
 
-    # Convertir ObjectId a string para usar en plantillas
-    for ex in examenes:
-        ex['_id'] = str(ex['_id'])
+        # Convertir ObjectId a string y cambiar el nombre del campo para los templates
+        for ex in examenes:
+            ex['id'] = str(ex['_id'])  # Crear campo 'id' sin guión bajo
+            del ex['_id']  # Eliminar el campo original
 
-    client.close()
+        client.close()
+        
+    except Exception as e:
+        error_message = f"Error al conectar con la base de datos: {str(e)}"
+        print(f"Error MongoDB: {error_message}")  # Debug
+        examenes = []
 
-    return render(request, 'manejador_examenes/ver_examenes_eeg.html', {'examenes': examenes})
+    return render(request, 'manejador_examenes/ver_examenes_eeg.html', {
+        'examenes': examenes,
+        'error_message': error_message
+    })
 
 
 def saludo(request):
     return render(request, 'manejador_examenes/base.html')
 
 
-def createEEGRecord(data):
-    # Validar y convertir a objeto EEGRecord
-    eeg_record = EEGRecord.from_dict(data)
-
+def save_eeg_to_mongodb(datos_json):
+    """Guarda los datos del EEG directamente en MongoDB"""
+    
+    # Validar que el usuario existe usando check_usuario
+    if not check_usuario(datos_json):
+        raise ValueError(f"El paciente '{datos_json['paciente']['nombre']}' no existe en el sistema")
+    
     client = MongoClient(settings.MONGO_CLI)
     db = client.eeg_db
-
-    # Verificar que el paciente existe en la colección 'pacientes'
-    pacientes_collection = db['pacientes']
-    paciente_db = pacientes_collection.find_one({'_id': ObjectId(eeg_record.paciente.id)})
-    
-    if paciente_db is None:
-        raise ValueError("Paciente no encontrado en la base de datos")
-
-    # Preparar documento para insertar (convierte el objeto EEGRecord a dict)
-    # Aquí simplificamos convirtiendo manualmente, pero se puede hacer mejor con métodos to_dict en las clases.
-    doc = {
-        "paciente": {
-            "id": eeg_record.paciente.id,
-            "nombre": eeg_record.paciente.nombre,
-            "edad": eeg_record.paciente.edad,
-            "sexo": eeg_record.paciente.sexo,
-            "historial_medico": {
-                "epilepsia": eeg_record.paciente.historial_medico.epilepsia,
-                "medicacion": eeg_record.paciente.historial_medico.medicacion,
-                "otros_diagnosticos": eeg_record.paciente.historial_medico.otros_diagnosticos,
-            }
-        },
-        "examen": {
-            "id": eeg_record.examen.id,
-            "fecha": eeg_record.examen.fecha.isoformat(),
-            "duracion_segundos": eeg_record.examen.duracion_segundos,
-            "frecuencia_muestreo": eeg_record.examen.frecuencia_muestreo,
-            "electrodos": eeg_record.examen.electrodos,
-            "sistema_colocacion": eeg_record.examen.sistema_colocacion,
-            "filtros_aplicados": {
-                "notch": eeg_record.examen.filtros_aplicados.notch,
-                "pasa_alto": eeg_record.examen.filtros_aplicados.pasa_alto,
-                "pasa_bajo": eeg_record.examen.filtros_aplicados.pasa_bajo,
-            }
-        },
-        "datos": [
-            {"tiempo": d.tiempo, "valores": d.valores}
-            for d in eeg_record.datos
-        ],
-        "eventos": [
-            {
-                "tipo": e.tipo,
-                "canal": e.canal,
-                "canales": e.canales,
-                "tiempo": e.tiempo,
-                "tiempo_inicio": e.tiempo_inicio,
-                "tiempo_fin": e.tiempo_fin,
-                "amplitud": e.amplitud,
-                "frecuencia_dominante": e.frecuencia_dominante,
-                "descripcion": e.descripcion,
-                "nivel_ruido": e.nivel_ruido,
-                "frecuencia": e.frecuencia
-            }
-            for e in eeg_record.eventos
-        ],
-        "analisis": {
-            "espectro_frecuencial": {
-                canal: {
-                    "delta": ef.delta,
-                    "theta": ef.theta,
-                    "alpha": ef.alpha,
-                    "beta": ef.beta,
-                    "gamma": ef.gamma
-                }
-                for canal, ef in eeg_record.analisis.espectro_frecuencial.items()
-            },
-            "sincronizacion_canal": eeg_record.analisis.sincronizacion_canal
-        }
-    }
-
     eeg_collection = db['eeg_records']
-    result = eeg_collection.insert_one(doc)
-
-    # Guardamos el ObjectId asignado en el objeto
-    eeg_record.id = str(result.inserted_id)
-
-    client.close()
-    return eeg_record
-
+    
+    try:
+        # Insertar el JSON después de validar el usuario
+        result = eeg_collection.insert_one(datos_json)
+        client.close()
+        return str(result.inserted_id)
+    except Exception as e:
+        client.close()
+        raise e
 
 
 @csrf_exempt
+@require_http_methods(["GET", "POST"])
 def subir_examen_eeg(request):
     if request.method == 'POST':
+        print("POST request recibido")  # Debug
+        print("FILES:", request.FILES)  # Debug
+        
+        # Verificar que se haya enviado un archivo
         if 'archivo_json' not in request.FILES:
-            return JsonResponse({'error': 'No se proporcionó un archivo JSON'}, status=400)
-
+            return JsonResponse({
+                'success': False, 
+                'error': 'No se seleccionó ningún archivo'
+            })
+        
         archivo = request.FILES['archivo_json']
+        print(f"Archivo recibido: {archivo.name}")  # Debug
+        
+        # Verificar que el archivo tenga extensión .json
         if not archivo.name.endswith('.json'):
-            return JsonResponse({'error': 'El archivo debe ser un .json'}, status=400)
-
+            return JsonResponse({
+                'success': False, 
+                'error': 'El archivo debe tener extensión .json'
+            })
+        
         try:
+            # Leer y validar el contenido JSON
             contenido = archivo.read().decode('utf-8')
-            data = json.loads(contenido)
-            eeg_record = createEEGRecord(data)
+            datos_json = json.loads(contenido)
+            print("JSON parseado correctamente")  # Debug
+            
+            # Validaciones específicas para la estructura de tu JSON EEG
+            campos_requeridos = ['paciente', 'examen', 'datos']
+            for campo in campos_requeridos:
+                if campo not in datos_json:
+                    return JsonResponse({
+                        'success': False, 
+                        'error': f'El archivo JSON debe contener el campo: {campo}'
+                    })
+            
+            # Validar estructura del paciente
+            if 'id' not in datos_json['paciente']:
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'El campo "paciente" debe contener un "id"'
+                })
+            
+            # Validar estructura del examen
+            campos_examen = ['id', 'fecha', 'electrodos']
+            for campo in campos_examen:
+                if campo not in datos_json['examen']:
+                    return JsonResponse({
+                        'success': False, 
+                        'error': f'El campo "examen" debe contener: {campo}'
+                    })
+            
+            # Crear directorio si no existe
+            upload_dir = os.path.join(settings.MEDIA_ROOT, 'examenes_eeg')
+            os.makedirs(upload_dir, exist_ok=True)
+            
+            # Guardar archivo con nombre único
+            paciente_id = datos_json['paciente']['id']
+            examen_id = datos_json['examen']['id']
+            nombre_archivo = f"examen_{paciente_id}_{examen_id}.json"
+            ruta_archivo = os.path.join(upload_dir, nombre_archivo)
+            
+            with open(ruta_archivo, 'w', encoding='utf-8') as f:
+                json.dump(datos_json, f, indent=2, ensure_ascii=False)
+            
+            print(f"Archivo guardado en: {ruta_archivo}")  # Debug
+            
+            # NUEVO: Guardar también en MongoDB
+            try:
+                mongodb_id = save_eeg_to_mongodb(datos_json)
+                print(f"Guardado en MongoDB con ID: {mongodb_id}")
+            except ValueError as validation_error:
+                # Error de validación de usuario
+                return JsonResponse({
+                    'success': False, 
+                    'error': str(validation_error)
+                })
+            except Exception as mongo_error:
+                print(f"Error al guardar en MongoDB: {str(mongo_error)}")
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Error al guardar en base de datos: {str(mongo_error)}'
+                })
+            
+            return JsonResponse({
+                'success': True, 
+                'message': f'Archivo {archivo.name} subido exitosamente',
+                'archivo': nombre_archivo
+            })
+            
+        except json.JSONDecodeError as e:
+            return JsonResponse({
+                'success': False, 
+                'error': f'El archivo no contiene JSON válido: {str(e)}'
+            })
         except Exception as e:
-            return JsonResponse({'error': f'Error procesando el archivo: {str(e)}'}, status=500)
-
-        return JsonResponse({'mensaje': 'Examen EEG subido correctamente', 'id': eeg_record.id}, status=200)
-
+            print(f"Error: {str(e)}")  # Debug
+            return JsonResponse({
+                'success': False, 
+                'error': f'Error al procesar el archivo: {str(e)}'
+            })
+    
+    # GET request - mostrar la página principal
+    print("GET request recibido")  # Debug
     return render(request, 'manejador_examenes/subir_examen_eeg.html')

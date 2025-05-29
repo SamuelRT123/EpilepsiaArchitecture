@@ -1,4 +1,3 @@
-
 {
   "paciente": {
     "id": "12345",
@@ -6,7 +5,7 @@
     "edad": 30,
     "sexo": "M",
     "historial_medico": {
-      "epilepsia": True,
+      "epilepsia": true,
       "medicacion": ["levetiracetam"],
       "otros_diagnosticos": ["migraña"]
     }
