@@ -69,8 +69,8 @@ resources:
     network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
     priority: 1000
     direction: INGRESS
-    sourceTags: 
-    - nosqld-django
+    sourceRanges:
+    - 10.128.0.86/32
     targetTags:
     - nosqld-mongo
     allowed:
