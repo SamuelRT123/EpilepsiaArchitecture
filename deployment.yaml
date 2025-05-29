@@ -205,8 +205,10 @@ resources:
               -p 27017:27017 \
               -e MONGO_INITDB_ROOT_USERNAME=sprint4 \
               -e MONGO_INITDB_ROOT_PASSWORD=securepassword123 \
-              -v /mnt/disks/mongodb-data:/data/db \
+              -v /mnt/stateful_partition/mongodb_data:/data/db \
               mongo:latest
+
+
 
 # Service instances
 - name: msd-usuarios-ms
