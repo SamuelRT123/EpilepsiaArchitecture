@@ -15,7 +15,7 @@ import os  # ← IMPORT AGREGADO
 
 def check_usuario(data):
     return True
-    r = requests.get(settings.PATH_VAR, headers={"Accept":"application/json"})
+    r = requests.get(settings.PATH_USER, headers={"Accept":"application/json"})
     usuarios = r.json()
     for usuario in usuarios:
         if data["paciente"]["nombre"] == usuario["nombre"]:

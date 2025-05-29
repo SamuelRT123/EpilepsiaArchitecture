@@ -123,3 +123,6 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 MONGO_CLI = "mongodb://sprint4:securepassword123@10.128.0.70:27017/eeg_db"
+
+PATH_API_GATEWAY = "http://" + os.environ.get("KONG_HOST", "10.128.0.81") + ":" + os.environ.get("KONG_PORT", "8000")
+PATH_USER = PATH_API_GATEWAY + "/usuarios"

@@ -19,15 +19,14 @@
         <a href="http://localhost:8000/examenes">Exámenes</a>
         <a href="http://localhost:8000/prediccion">Predicción</a>
 </div>
-        <!-- Botón login/logout (comentar si aún no se usa) -->
-        {% comment %} {# 
+        
         {% if request.user.is_authenticated %}
           <strong>{{ request.user.username }}</strong>
-          <a href="{% url 'logout' %}">Cerrar sesión</a>
+          <a href="{% url 'logout_auth0' %}">Cerrar sesión</a>
         {% else %}
-          <a href="{% url 'login' %}">Iniciar sesión</a>
+          <a style="font-size:120%; padding-right:20px" class="navbar-link" href="{% url 'social:begin' 'auth0' %}">Login</a>
         {% endif %}
-        #} {% endcomment %}
+        
       </div>
     </nav>
   </header>

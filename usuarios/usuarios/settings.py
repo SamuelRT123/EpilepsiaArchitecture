@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'manejador_usuarios',
+    'social_django',  # Agregado para manejar autenticación social
 ]
 
 MIDDLEWARE = [
@@ -60,11 +61,13 @@ TEMPLATES = [
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        'context_processors': [
+            'django.template.context_processors.debug',
+            'django.template.context_processors.request',
+            'django.contrib.auth.context_processors.auth',
+            'django.contrib.messages.context_processors.messages',
+            'social_django.context_processors.backends',
+            'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -121,6 +124,21 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LOGIN_URL = "/login/auth0" 
+LOGIN_REDIRECT_URL = "/" 
+LOGOUT_REDIRECT_URL = "/"
+SOCIAL_AUTH_TRAILING_SLASH = False # Remove end slash from routes 
+SOCIAL_AUTH_AUTH0_DOMAIN = 'dev-p5sjs3hhduuvypzb.us.auth0.com' 
+SOCIAL_AUTH_AUTH0_KEY = 'ZrvYYSaEqum49q6b1xuuBF28WLRwQWve' 
+SOCIAL_AUTH_AUTH0_SECRET = 'fg2XGDzLbMHr1SxbKiwJKbUDLl1XpTAYwmSZK0_nTutqug6tS1f-AR0cSqclOs7v' 
+
+SOCIAL_AUTH_AUTH0_SCOPE = [ 'openid', 'profile', 'email', 'role', ] 
+
+AUTHENTICATION_BACKENDS = (
+    'manejador_usuarios.authBackend.Auth0',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
