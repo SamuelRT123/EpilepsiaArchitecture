@@ -1,9 +1,9 @@
 {% extends 'manejador_examenes/base.html' %}
 
-{% block title %}Lista de Exámenes{% endblock %}
+{% block title %}Examen de Ejemplo{% endblock %}
 
 {% block content %}
-  <h2>📄 Exámenes EEG Registrados</h2>
+  <h2>📄 Examen EEG de Ejemplo</h2>
   
   {% if error_message %}
     <div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
@@ -20,23 +20,32 @@
         <th>Duración (s)</th>
         <th>Frecuencia (Hz)</th>
         <th>Electrodos</th>
+        <th>Estado</th>
       </tr>
     </thead>
     <tbody>
       {% for examen in examenes %}
         <tr>
-          <td>{{ examen.id|slice:":8" }}...</td>
-          <td>{{ examen.paciente.nombre }}</td>
+          <td>{{ examen.id }}</td>
+          <td>
+            <strong>{{ examen.paciente.nombre }}</strong><br>
+            <small>{{ examen.paciente.edad }} años, {{ examen.paciente.sexo }}</small>
+          </td>
           <td>{{ examen.examen.fecha|slice:":10" }}</td>
           <td>{{ examen.examen.duracion_segundos }}</td>
           <td>{{ examen.examen.frecuencia_muestreo }}</td>
           <td>{{ examen.examen.electrodos|length }} electrodos</td>
+          <td>
+            <span style="background-color: #d4edda; color: #155724; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.8em;">
+              ✓ Ejemplo
+            </span>
+          </td>
         </tr>
       {% empty %}
         <tr>
-          <td colspan="6" style="text-align:center; padding: 2rem; color: #6c757d;">
+          <td colspan="7" style="text-align:center; padding: 2rem; color: #6c757d;">
             {% if not error_message %}
-              📭 No hay exámenes registrados.
+              📭 No hay exámenes para mostrar.
             {% else %}
               No se pueden mostrar los exámenes debido al error anterior.
             {% endif %}
@@ -47,15 +56,60 @@
   </table>
 
   {% if examenes %}
+    <!-- Información detallada del examen de ejemplo -->
+    <div style="margin-top: 2rem; background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+      <h3>📊 Detalles del Examen de Ejemplo</h3>
+      {% for examen in examenes %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+          <div>
+            <h4>👤 Información del Paciente:</h4>
+            <ul style="margin: 0; padding-left: 1.5rem;">
+              <li><strong>Nombre:</strong> {{ examen.paciente.nombre }}</li>
+              <li><strong>ID:</strong> {{ examen.paciente.id }}</li>
+              <li><strong>Edad:</strong> {{ examen.paciente.edad }} años</li>
+              <li><strong>Sexo:</strong> {{ examen.paciente.sexo }}</li>
+            </ul>
+          </div>
+          <div>
+            <h4>🔬 Información del Examen:</h4>
+            <ul style="margin: 0; padding-left: 1.5rem;">
+              <li><strong>ID Examen:</strong> {{ examen.examen.id }}</li>
+              <li><strong>Sistema:</strong> {{ examen.examen.sistema_colocacion }}</li>
+              <li><strong>Electrodos:</strong> {{ examen.examen.electrodos|join:", " }}</li>
+              <li><strong>Datos registrados:</strong> {{ examen.datos|length }} muestras</li>
+            </ul>
+          </div>
+        </div>
+        
+        {% if examen.eventos %}
+          <div style="margin-top: 1rem;">
+            <h4>⚡ Eventos Detectados:</h4>
+            <ul style="margin: 0; padding-left: 1.5rem;">
+              {% for evento in examen.eventos %}
+                <li>
+                  <strong>{{ evento.tipo|title }}:</strong> 
+                  {% if evento.canal %}Canal {{ evento.canal }}{% endif %}
+                  {% if evento.canales %}Canales {{ evento.canales|join:", " }}{% endif %}
+                  ({{ evento.tiempo }}s)
+                  {% if evento.descripcion %} - {{ evento.descripcion }}{% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    
     <div style="margin-top: 1rem; text-align: center; color: #6c757d;">
-      Total: {{ examenes|length }} examen{{ examenes|length|pluralize:"es" }}
+      Mostrando {{ examenes|length }} examen de ejemplo
     </div>
   {% endif %}
 
-  <div style="margin-top: 2rem; text-align: center;">
+  <div style="margin-top: 2rem; text-align: center; display: flex; gap: 1rem; justify-content: center;">
     <a href="{% url 'examenes_home' %}">
       <button style="padding: 0.75rem 1.5rem;">← Volver al inicio</button>
     </a>
+    <button onclick="window.location.reload()" style="padding: 0.75rem 1.5rem;">🔄 Actualizar</button>
   </div>
 
 {% endblock %}

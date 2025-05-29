@@ -45,6 +45,15 @@
       overflow-x: auto;
       font-size: 0.9em;
     }
+    .info-note {
+      background-color: #e7f3ff;
+      border: 1px solid #b3d9ff;
+      color: #0056b3;
+      padding: 1rem;
+      border-radius: 4px;
+      margin: 1rem 0;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -65,20 +74,26 @@
   <main>
     <h1 style="text-align: center;">🧪 Gestión de Exámenes EEG</h1>
 
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 2rem; margin-top: 3rem;">
+
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 2rem; margin-top: 2rem;">
 
       <!-- Input de archivo oculto -->
       <input type="file" id="jsonFileInput" class="hidden" accept=".json" />
 
       <!-- Botón para subir archivo JSON -->
       <button id="uploadButton" style="padding: 1rem 2rem;" onclick="selectFile()">
-        ⬆️ Subir examen EEG (.json)
+        📁 Subir archivo EEG (.json)
       </button>
 
-      <!-- Botón para ver todos los exámenes -->
-      <a href="{% url 'ver_examenes' %}">
-        <button style="padding: 1rem 2rem;">📑 Ver Exámenes EEG</button>
+          <!-- Botón para ver el examen de ejemplo -->
+      <a href="#" onclick="mostrarExamen(); return false;">
+        <button style="padding: 1rem 2rem;">👁️ Ver Examenes</button>
       </a>
+
+      <!-- Contenedor donde se mostrará el examen -->
+      <div id="contenedor-examen" style="display: none; max-width: 700px;"></div>
+
 
       <!-- Estado de la subida -->
       <div id="uploadStatus" class="upload-status hidden"></div>
@@ -145,8 +160,14 @@
         return;
       }
 
+      // Validar tamaño del archivo (opcional: máximo 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        showStatus('❌ Error: El archivo es demasiado grande (máximo 10MB)', 'error');
+        return;
+      }
+
       // Mostrar estado de carga
-      showStatus('⏳ Subiendo archivo...', 'loading');
+      showStatus('📁 Guardando archivo...', 'loading');
       
       // Crear FormData
       const formData = new FormData();
@@ -184,17 +205,19 @@
       })
       .then(data => {
         if (data.success) {
-          showStatus(`✅ ${data.message}`, 'success');
-          // Opcional: recargar después de 3 segundos
+          showStatus(`✅ Archivo guardado: ${data.archivo}`, 'success');
+          console.log('Archivo guardado exitosamente:', data.archivo);
+          // Mostrar mensaje por más tiempo para que el usuario lo vea
           setTimeout(() => {
             hideStatus();
-          }, 3000);
+          }, 5000);
         } else {
           showStatus(`❌ ${data.error}`, 'error');
         }
       })
       .catch(error => {
-        showStatus(`❌ Error al subir el archivo: ${error.message}`, 'error');
+        console.error('Error detallado:', error);
+        showStatus(`❌ Error al guardar el archivo: ${error.message}`, 'error');
       })
       .finally(() => {
         // Limpiar el input para permitir subir el mismo archivo otra vez
@@ -213,7 +236,71 @@
       const statusDiv = document.getElementById('uploadStatus');
       statusDiv.classList.add('hidden');
     }
+
+    // Mostrar información adicional al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Sistema EEG cargado - Modo sin base de datos');
+    });
   </script>
+
+  <script>
+  const examenJSON = {
+    "paciente": {
+      "id": "12345",
+      "nombre": "Juan Pérez",
+      "edad": 30,
+      "sexo": "M",
+      "historial_medico": {
+        "epilepsia": true,
+        "medicacion": ["levetiracetam"],
+        "otros_diagnosticos": ["migraña"]
+      }
+    },
+    "examen": {
+      "id": "EEG20250403-001",
+      "fecha": "2025-04-03T14:30:00Z",
+      "duracion_segundos": 300,
+      "frecuencia_muestreo": 256,
+      "electrodos": ["Fp1", "Fp2", "F3", "F4", "C3", "C4", "P3", "P4", "O1", "O2"],
+      "sistema_colocacion": "10-20",
+      "filtros_aplicados": {
+        "notch": "50Hz",
+        "pasa_alto": "0.5Hz",
+        "pasa_bajo": "70Hz"
+      }
+    }
+  };
+
+  function mostrarExamen() {
+    const contenedor = document.getElementById("contenedor-examen");
+    contenedor.style.display = "block";
+    contenedor.innerHTML = `
+      <div class="info-note">
+        <h3>📄 Detalles del Examen de Ejemplo</h3>
+        <p><strong>ID Paciente:</strong> ${examenJSON.paciente.id}</p>
+        <p><strong>Nombre:</strong> ${examenJSON.paciente.nombre}</p>
+        <p><strong>Edad:</strong> ${examenJSON.paciente.edad}</p>
+        <p><strong>Sexo:</strong> ${examenJSON.paciente.sexo}</p>
+        <p><strong>Epilepsia:</strong> ${examenJSON.paciente.historial_medico.epilepsia ? 'Sí' : 'No'}</p>
+        <p><strong>Medicaciones:</strong> ${examenJSON.paciente.historial_medico.medicacion.join(', ')}</p>
+        <p><strong>Otros Diagnósticos:</strong> ${examenJSON.paciente.historial_medico.otros_diagnosticos.join(', ')}</p>
+        <hr>
+        <p><strong>ID Examen:</strong> ${examenJSON.examen.id}</p>
+        <p><strong>Fecha:</strong> ${new Date(examenJSON.examen.fecha).toLocaleString()}</p>
+        <p><strong>Duración:</strong> ${examenJSON.examen.duracion_segundos} segundos</p>
+        <p><strong>Frecuencia de Muestreo:</strong> ${examenJSON.examen.frecuencia_muestreo} Hz</p>
+        <p><strong>Electrodos:</strong> ${examenJSON.examen.electrodos.join(', ')}</p>
+        <p><strong>Sistema de Colocación:</strong> ${examenJSON.examen.sistema_colocacion}</p>
+        <p><strong>Filtros Aplicados:</strong></p>
+        <ul>
+          <li>Notch: ${examenJSON.examen.filtros_aplicados.notch}</li>
+          <li>Pasa Alto: ${examenJSON.examen.filtros_aplicados.pasa_alto}</li>
+          <li>Pasa Bajo: ${examenJSON.examen.filtros_aplicados.pasa_bajo}</li>
+        </ul>
+      </div>
+    `;
+  }
+</script>
 
 </body>
 </html>
