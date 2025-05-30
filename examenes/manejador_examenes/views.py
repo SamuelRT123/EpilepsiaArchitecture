@@ -14,7 +14,7 @@ import os  # ← IMPORT AGREGADO
 
 
 def check_usuario(data):
-    return True
+    #return True
     r = requests.get(settings.PATH_USER, headers={"Accept":"application/json"})
     usuarios = r.json()
     for usuario in usuarios:
@@ -25,7 +25,7 @@ def check_usuario(data):
 def ver_examenes_eeg(request):
     examenes = []
     error_message = None
-    """
+    
     try:
         print("Intentando conectar a MongoDB...")  # Debug
       
@@ -53,7 +53,7 @@ def ver_examenes_eeg(request):
         error_message = f"Error al conectar con la base de datos: {str(e)}"
         print(f"Error MongoDB: {error_message}")  # Debug
         examenes = []
-"""
+
     return render(request, 'manejador_examenes/ver_examenes_eeg.html', {
         'examenes': examenes,
         'error_message': error_message
@@ -63,7 +63,7 @@ def ver_examenes_eeg(request):
 def saludo(request):
     return render(request, 'manejador_examenes/base.html')
 
-"""
+
 def save_eeg_to_mongodb(datos_json):
     
     # Validar que el usuario existe usando check_usuario
@@ -82,7 +82,7 @@ def save_eeg_to_mongodb(datos_json):
     except Exception as e:
         client.close()
         raise e
-"""
+
 
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
@@ -155,21 +155,21 @@ def subir_examen_eeg(request):
             print(f"Archivo guardado en: {ruta_archivo}")  # Debug
             
             # NUEVO: Guardar también en MongoDB
-            # try:
-            #     mongodb_id = save_eeg_to_mongodb(datos_json)
-            #     print(f"Guardado en MongoDB con ID: {mongodb_id}")
-            # except ValueError as validation_error:
-            #     # Error de validación de usuario
-            #     return JsonResponse({
-            #         'success': False, 
-            #         'error': str(validation_error)
-            #     })
-            # except Exception as mongo_error:
-            #     print(f"Error al guardar en MongoDB: {str(mongo_error)}")
-            #     return JsonResponse({
-            #         'success': False, 
-            #         'error': f'Error al guardar en base de datos: {str(mongo_error)}'
-            #     })
+            try:
+                mongodb_id = save_eeg_to_mongodb(datos_json)
+                print(f"Guardado en MongoDB con ID: {mongodb_id}")
+            except ValueError as validation_error:
+                # Error de validación de usuario
+                return JsonResponse({
+                    'success': False, 
+                    'error': str(validation_error)
+                })
+            except Exception as mongo_error:
+                print(f"Error al guardar en MongoDB: {str(mongo_error)}")
+                return JsonResponse({
+                    'success': False, 
+                    'error': f'Error al guardar en base de datos: {str(mongo_error)}'
+                })
             
             return JsonResponse({
                 'success': True, 
