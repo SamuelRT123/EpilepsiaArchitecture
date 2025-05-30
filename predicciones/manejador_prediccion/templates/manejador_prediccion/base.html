@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}DetecciónEpilepsia{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+  <style>
+    .nav-container {
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      width: 100%;
+    }
+    .nav-left {
+      display: flex; 
+      align-items: center; 
+      gap: 1.5rem;
+    }
+    .nav-right {
+      display: flex; 
+      align-items: center; 
+      gap: 1rem;
+    }
+    .brand {
+      font-weight: bold; 
+      color: #2c3e50;
+    }
+    .btn-primary {
+      background: #3498db; 
+      color: white; 
+      padding: 0.6rem 1.2rem; 
+      border: none; 
+      border-radius: 6px; 
+      text-decoration: none; 
+      display: inline-block;
+      margin: 0.5rem;
+      cursor: pointer;
+    }
+    .btn-primary:hover {
+      background: #2980b9;
+    }
+    .btn-success {
+      background: #27ae60; 
+      color: white; 
+      padding: 0.6rem 1.2rem; 
+      border: none; 
+      border-radius: 6px; 
+      text-decoration: none; 
+      display: inline-block;
+      margin: 0.5rem;
+      cursor: pointer;
+    }
+    .btn-success:hover {
+      background: #229954;
+    }
+    .center-buttons {
+      display: flex; 
+      justify-content: center; 
+      gap: 1rem; 
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <nav class="nav-container">
+    <!-- IZQUIERDA: Título y navegación -->
+    <div class="nav-left">
+      <div class="brand">
+        G3 - TheBitArchitects
+      </div>
+      <a href="{% url 'home' %}">Inicio</a>
+      <a href="{% url 'prediccion_view' %}">Análisis EEG</a>
+      <a href="{% url 'api_prediccion' %}">API</a>
+    </div>
+    
+  </nav>
+</header>
+
+<main>
+  {% block content %}
+  <div style="text-align: center; margin-top: 3rem;">
+    <h1 style="color: #2c3e50; margin-bottom: 2rem;">
+      🧠 Sistema de Detección de Epilepsia
+    </h1>
+    <p style="font-size: 1.2rem; color: #7f8c8d; margin-bottom: 3rem;">
+      Análisis avanzado de electroencefalogramas para la detección temprana de anomalías epilépticas
+    </p>
+  </div>
+
+  <div class="center-buttons">
+    <a href="{% url 'prediccion_view' %}" class="btn-success">
+      🔍 Analizar Examen EEG
+    </a>
+    <a href="{% url 'api_prediccion' %}" class="btn-primary">
+      🔗 API de Predicción
+    </a>
+  </div>
+
+  <!-- Información del sistema -->
+  <div style="max-width: 800px; margin: 3rem auto; padding: 2rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #3498db;">
+    <h3 style="color: #2c3e50; margin-top: 0;">🎯 Microservicio de Análisis EEG</h3>
+    <ul style="color: #495057; line-height: 1.8;">
+      <li><strong>Análisis en Tiempo Real:</strong> Procesamiento inmediato de datos EEG</li>
+      <li><strong>Detección de Anomalías:</strong> Identificación automática de patrones epileptiformes</li>
+      <li><strong>Evaluación de Riesgo:</strong> Clasificación inteligente del nivel de riesgo</li>
+      <li><strong>API RESTful:</strong> Endpoint para integración con otros microservicios</li>
+      <li><strong>Recomendaciones Médicas:</strong> Sugerencias personalizadas basadas en el análisis</li>
+    </ul>
+  </div>
+  {% endblock %}
+</main>
+
+</body>
+</html>

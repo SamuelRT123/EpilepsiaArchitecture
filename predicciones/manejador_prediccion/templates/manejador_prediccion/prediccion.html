@@ -1,0 +1,147 @@
+{% extends 'manejador_prediccion/base.html' %}
+
+{% block title %}Predicción de Epilepsia - {{ paciente.nombre }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+    <h1 style="text-align: center; color: #2c3e50; margin-bottom: 2rem;">
+        Análisis y Predicción EEG
+    </h1>
+
+    <!-- Información del Paciente -->
+    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #3498db;">
+        <h2 style="margin-top: 0; color: #2c3e50;">Información del Paciente</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div><strong>Nombre:</strong> {{ paciente.nombre }}</div>
+            <div><strong>ID:</strong> {{ paciente.id }}</div>
+            <div><strong>Edad:</strong> {{ paciente.edad }} años</div>
+            <div><strong>Sexo:</strong> {{ paciente.sexo }}</div>
+        </div>
+        
+        {% if paciente.historial_medico.epilepsia %}
+        <div style="margin-top: 1rem; padding: 0.8rem; background: #fff3cd; border-radius: 4px; border-left: 3px solid #ffc107;">
+            <strong>⚠️ Historial de Epilepsia:</strong> Sí
+            {% if paciente.historial_medico.medicacion %}
+            <br><strong>Medicación:</strong> {{ paciente.historial_medico.medicacion|join:", " }}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Información del Examen -->
+    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #17a2b8;">
+        <h2 style="margin-top: 0; color: #2c3e50;">Detalles del Examen</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+            <div><strong>ID del Examen:</strong> {{ examen.id }}</div>
+            <div><strong>Fecha:</strong> {{ examen.fecha|date:"d/m/Y H:i" }}</div>
+            <div><strong>Duración:</strong> {{ examen.duracion_segundos }} segundos</div>
+            <div><strong>Frecuencia de Muestreo:</strong> {{ examen.frecuencia_muestreo }} Hz</div>
+        </div>
+        <div style="margin-top: 1rem;">
+            <strong>Electrodos:</strong> {{ examen.electrodos|join:", " }}
+        </div>
+    </div>
+
+    <!-- Resultado de la Predicción -->
+    <div style="background: {% if prediccion.riesgo == 'Alto' %}#f8d7da{% elif prediccion.riesgo == 'Medio' %}#fff3cd{% else %}#d1edff{% endif %}; 
+                padding: 2rem; border-radius: 8px; margin-bottom: 2rem; 
+                border-left: 6px solid {% if prediccion.riesgo == 'Alto' %}#dc3545{% elif prediccion.riesgo == 'Medio' %}#ffc107{% else %}#17a2b8{% endif %};">
+        <h2 style="margin-top: 0; color: #2c3e50; text-align: center;">
+            🔍 Resultado de la Predicción
+        </h2>
+        
+        <div style="text-align: center; margin: 1.5rem 0;">
+            <div style="font-size: 1.8rem; font-weight: bold; color: {% if prediccion.riesgo == 'Alto' %}#dc3545{% elif prediccion.riesgo == 'Medio' %}#e67e22{% else %}#27ae60{% endif %};">
+                Nivel de Riesgo: {{ prediccion.riesgo }}
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+            <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.5); border-radius: 6px;">
+                <div style="font-size: 2rem; font-weight: bold; color: #2c3e50;">{{ prediccion.total_anomalias }}</div>
+                <div>Total de Anomalías</div>
+            </div>
+            <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.5); border-radius: 6px;">
+                <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;">{{ prediccion.anomalias_criticas }}</div>
+                <div>Anomalías Críticas</div>
+            </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.7); padding: 1.5rem; border-radius: 6px; margin-top: 1.5rem;">
+            <h3 style="margin-top: 0; color: #2c3e50;">💡 Recomendación Médica:</h3>
+            <p style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 0;">{{ prediccion.recomendacion }}</p>
+        </div>
+    </div>
+
+    <!-- Detalle de Anomalías Detectadas -->
+    {% if anomalias %}
+    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #e74c3c;">
+        <h2 style="margin-top: 0; color: #2c3e50;">🚨 Anomalías Detectadas</h2>
+        
+        {% for anomalia in anomalias %}
+        <div style="background: white; padding: 1rem; margin-bottom: 1rem; border-radius: 6px; border-left: 3px solid 
+                    {% if anomalia.severidad == 'Alta' %}#dc3545{% elif anomalia.severidad == 'Media' %}#ffc107{% else %}#6c757d{% endif %};">
+            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-weight: bold; text-transform: uppercase; color: #2c3e50;">
+                    {{ anomalia.tipo }}
+                </span>
+                <span style="background: {% if anomalia.severidad == 'Alta' %}#dc3545{% elif anomalia.severidad == 'Media' %}#ffc107{% else %}#6c757d{% endif %}; 
+                             color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">
+                    {{ anomalia.severidad }}
+                </span>
+            </div>
+            <p style="margin: 0; color: #495057;">{{ anomalia.mensaje }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Botones de Acción -->
+    <div style="text-align: center; margin-top: 3rem;">
+        <button onclick="window.print()" 
+                style="background: #3498db; color: white; padding: 0.8rem 2rem; border: none; border-radius: 6px; font-size: 1rem; margin-right: 1rem; cursor: pointer;">
+            📄 Imprimir Reporte
+        </button>
+        
+        <button onclick="descargarJSON()" 
+                style="background: #27ae60; color: white; padding: 0.8rem 2rem; border: none; border-radius: 6px; font-size: 1rem; margin-right: 1rem; cursor: pointer;">
+            💾 Descargar JSON
+        </button>
+        
+        <a href="/prediccion/" 
+           style="background: #e67e22; color: white; padding: 0.8rem 2rem; border: none; border-radius: 6px; font-size: 1rem; text-decoration: none; display: inline-block;">
+            🔄 Actualizar Análisis
+        </a>
+    </div>
+</div>
+
+<script>
+function descargarJSON() {
+    const data = {
+        paciente: {
+            nombre: "{{ paciente.nombre }}",
+            id: "{{ paciente.id }}",
+            edad: {{ paciente.edad }}
+        },
+        examen_id: "{{ examen.id }}",
+        prediccion: {
+            riesgo: "{{ prediccion.riesgo }}",
+            total_anomalias: {{ prediccion.total_anomalias }},
+            anomalias_criticas: {{ prediccion.anomalias_criticas }},
+            recomendacion: "{{ prediccion.recomendacion }}"
+        },
+        fecha_analisis: "{{ prediccion.fecha_analisis }}"
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `prediccion_${data.examen_id}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}
