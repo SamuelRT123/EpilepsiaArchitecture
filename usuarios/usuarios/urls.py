@@ -16,11 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from usuarios.manejador_usuarios import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('manejador_usuarios.urls')),
     path(r'', include('social_django.urls')),
-    path('health-check/', views.health_check, name='health_check'),  # Nueva línea para health check
 ]

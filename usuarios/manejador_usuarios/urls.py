@@ -8,4 +8,5 @@ urlpatterns = [
     path('usuarios/crear', views.crear_usuario, name='crear_usuario'),
     path('logout/auth0/', views.logout_auth0, name='logout_auth0'),  # Nueva línea
     path(r'', include('django.contrib.auth.urls')),
+    path('health-check/', views.health_check, name='health_check'),
 ]
