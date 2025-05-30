@@ -299,9 +299,9 @@ resources:
     networkInterfaces:
     - network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
       networkIP: 10.128.0.85
-      accessConfigs:
-      - name: External NAT
-        type: ONE_TO_ONE_NAT
+      # accessConfigs:
+      # - name: External NAT
+      #   type: ONE_TO_ONE_NAT
     tags:
       items: 
       - msd-services-firewall
