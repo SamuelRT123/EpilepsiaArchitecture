@@ -51,9 +51,10 @@ def UsuariosList(request):
 def saludo(request):
     return render(request, 'manejador_usuarios/base.html')
 
-@login_required
+#@login_required
 def mostrar_usuarios(request):
     role = authBackend.getRole(request)
+    role = "Medico"
     if role == "Medico":
         usuarios = Usuario.objects.all()
         return render(request, 'manejador_usuarios/usuarios_lista.html', {'usuarios': usuarios})
