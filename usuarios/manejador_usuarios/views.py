@@ -19,6 +19,10 @@ from django.contrib.auth import logout
 from django.shortcuts import redirect
 from urllib.parse import urlencode
 
+def health_check(request):
+    return HttpResponse("OK")
+    
+
 def logout_auth0(request):
     """Logout personalizado para Auth0"""
     # Cerrar sesión en Django

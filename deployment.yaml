@@ -211,7 +211,44 @@ resources:
 
 
 # Service instances
-- name: msd-usuarios-ms
+- name: msd-usuarios-a
+  type: compute.v1.instance
+  properties:
+    zone: us-central1-a
+    machineType: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/zones/us-central1-a/machineTypes/e2-micro
+    disks:
+    - deviceName: boot
+      type: PERSISTENT
+      boot: true
+      autoDelete: true
+      initializeParams:
+        sourceImage: https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20240307b
+    networkInterfaces:
+    - network: https://www.googleapis.com/compute/v1/projects/s4-g3-sprint4-460821/global/networks/default
+      networkIP: 10.128.0.84
+      accessConfigs:
+      - name: External NAT
+        type: ONE_TO_ONE_NAT
+    tags:
+      items: 
+      - msd-services-firewall
+    metadata:
+      items:
+      - key: startup-script
+        value: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt install python3-pip -y
+          sudo mkdir /home/labs
+          cd /home/labs
+          sudo git clone https://github.com/SamuelRT123/EpilepsiaArchitecture.git
+          cd EpilepsiaArchitecture/usuarios
+          sudo pip3 install -r requirements.txt
+          sudo python3 manage.py makemigrations
+          sudo python3 manage.py migrate
+        
+# Service instances
+- name: msd-usuarios-b
   type: compute.v1.instance
   properties:
     zone: us-central1-a
